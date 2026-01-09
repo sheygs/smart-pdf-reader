@@ -3,7 +3,8 @@ from tempfile import NamedTemporaryFile
 import base64
 
 # third-party
-# import streamlit as st
+import streamlit as st
+
 # from dotenv import load_dotenv
 # from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings
 # from langchain.chat_models import ChatOpenAI
@@ -21,9 +22,9 @@ from html_templates import css, bot_template, user_template, expander_css
 
 def main():
     ## Task 3: Create Web-page Layout
+    st.title("Interactive PDF reader")
     ## Task 5: Load and Process the PDF
     ## Task 7: Handle query and display pages
-    print(f"Interactive PDF reader")
 
 
 if __name__ == "__main__":
