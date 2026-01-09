@@ -6,14 +6,16 @@ import os
 # third-party
 import streamlit as st
 from dotenv import load_dotenv
-# from langchain.embeddings import HuggingFaceEmbeddings, OpenAIEmbeddings
-# from langchain.chat_models import ChatOpenAI
-# from langchain.chains import ConversationalRetrievalChain
-# from langchain.vectorstores import Chroma
-# from langchain.document_loaders import PyPDFLoader
-# from PyPDF2 import PdfReader, PdfWriter
 
-# module imports
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain.chains import ConversationalRetrievalChain
+from langchain_community.vectorstores import Chroma
+from langchain_community.document_loaders import PyPDFLoader
+from pypdf import PdfReader, PdfWriter
+
+# custom imports
 from html_templates import css, bot_template, user_template, expander_css
 
 load_dotenv()
@@ -22,20 +24,37 @@ openai_key = os.getenv("OPENAI_API_KEY")
 huggingface_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 
-## Todo 4: Process user input
-def process_file():
-    pass
+# T2: process user input
+def process_file(document):
+    # available models here: https://huggingface.co/spaces/mteb/leaderboard
+    model_name = "thenlper/gte-small"
+    model_kwargs = {"device": "cpu"}
+    encode_kwargs = {"normalize_embeddings": False}
+
+    embeddings = HuggingFaceEmbeddings(
+        model_name=model_name, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
+    )
+
+    search_pdf = Chroma.from_documents(document, embeddings)
+
+    chain = ConversationalRetrievalChain.from_llm(
+        llm=ChatOpenAI(temperature=0.3),
+        retriever=search_pdf.as_retriever(search_kwargs={"k": 2}),
+        return_source_documents=True,
+    )
+
+    return chain
 
 
-## Todo 6: Method for Handling User Input
+## T6: Method for Handling User Input
 def handle_user_input():
     pass
 
 
 def main():
-    ## Todo 3: Create Web-page Layout
+    ## T3: Create Web-page Layout
     st.set_page_config(
-        page_title="Interactive PDF reader", layout="wide", page_icon="📕"
+        page_title="Interactive PDF Reader", layout="wide", page_icon="📕"
     )
 
     st.markdown(css, unsafe_allow_html=True)
@@ -58,13 +77,36 @@ def main():
         user_input = st.text_input("Ask a question from the contents of the PDF:")
 
         st.session_state.user_input = user_input
+
         st.write(st.session_state.user_input)
 
         with st.expander("Your Chat", expanded=True):
             st.markdown(expander_css, unsafe_allow_html=True)
 
-    ## Todo 5: Load and Process the PDF
-    ## Todo 7: Handle query and display pages
+        ## T5: Load and Process the PDF
+        st.header("Your Documents")
+
+        st.session_state.pdf_file = st.file_uploader(
+            "Upload a PDF here and click ‘Process’"
+        )
+
+        st.write(st.session_state.pdf_file)
+
+        if st.button("Process", key="b"):
+            with st.spinner("Processing..."):
+                if st.session_state.pdf_file is not None:
+                    with NamedTemporaryFile(suffix="pdf") as temp:
+                        # st.write(temp)
+                        # st.write(st.session_state.pdf_file.getvalue())
+                        temp.write(st.session_state.pdf_file.getvalue())
+                        temp.seek(0)
+                        loader = PyPDFLoader(temp.name)
+                        pdf = loader.load()
+                        st.session_state.conversation = process_file(pdf)
+                        print({"session_conversation": st.session_state.conversation})
+                        st.markdown("Done processing. You may now ask a question.")
+
+    ## T7: Handle query and display pages
 
 
 if __name__ == "__main__":

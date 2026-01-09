@@ -1,8 +1,12 @@
 streamlit==1.52.2
 python-dotenv==1.2.1
-langchain==1.2.3
-openai==2.14.0
+langchain==0.3.19
+langchain-community==0.3.18
+langchain-openai==0.3.7
+langchain-huggingface==0.1.2
+langchain-core==0.3.82
+openai==1.109.1
 chromadb==1.4.0
-PyPDF2==3.0.1
+pypdf
 sentence-transformers==5.2.0
 tiktoken==0.12.0
