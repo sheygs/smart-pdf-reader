@@ -2,7 +2,7 @@
 
 An interactive PDF reader powered by LangChain and GPT that enables users to upload PDF documents and chat with an AI assistant to extract insights, answer questions, and navigate content intelligently.
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue.svg)
 ![LangChain](https://img.shields.io/badge/LangChain-🦜-green.svg)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/OpenAI-412991?logo=openai&logoColor=white)
@@ -26,8 +26,9 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 ## Prerequisites
 
-- Python 3.9+
+- Python 3.12 (recommended) or 3.10-3.13
 - OpenAI API key
+- HUGGINGFACE API token
 
 ## Installation
 
@@ -41,7 +42,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 2. **Create a virtual environment**
 
 ```bash
-   python -m venv venv
+   python3.12 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
@@ -57,6 +58,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 ```env
    OPENAI_API_KEY=your_openai_api_key_here
+   HUGGINGFACEHUB_API_TOKEN=your_huggingface_api_token_here
 ```
 
 ## Usage
@@ -64,7 +66,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 1. **Start the application**
 
 ```bash
-   streamlit run app.py
+   streamlit run src/app.py
 ```
 
 2. **Upload your PDF**
@@ -82,20 +84,13 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 ```text
 smart-pdf-reader/
 │
-├── app.py                  # Main Streamlit application
-├── requirements.txt        # Python dependencies
-├── .env.example           # Environment variables template
+├── src/
+│   ├── app.py             # Main Streamlit application
+│   └── html_templates.py  # HTML/CSS templates for chat UI
+│
+├── requirements.txt       # Python dependencies
+├── .env.dev                   # Environment variables
 ├── README.md              # Project documentation
-│
-├── utils/
-│   ├── __init__.py
-│   ├── pdf_processor.py   # PDF text extraction and chunking
-│   ├── embeddings.py      # Vector embedding creation
-│   └── chat_handler.py    # LangChain chat logic
-│
-├── data/
-│   └── .gitkeep          # Temporary PDF storage
-│
 └── .gitignore
 ```
 
