@@ -1,7 +1,10 @@
 css = """
 <style>
 .chat-message {
-    padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    display: flex;
 }
 .chat-message.user {
     background-color: #2b313e
@@ -23,6 +26,7 @@ css = """
   padding: 0 1.5rem;
   color: #fff;
 }
+</style>
 """
 
 bot_template = """
@@ -42,4 +46,5 @@ user_template = """
     <div class="message">{{MSG}}</div>
 </div>
 """
-expander_css = '<style>[data-testid="stExpander"] div:has(>.streamlit-expanderContent) {overflow: scroll;height: 45vh;}</style>'
+
+expander_css = '<style>[data-testid="stExpander"] div:has(>.streamlit-expanderContent) {overflow: scroll;height: 90vh;}</style>'
