@@ -1,9 +1,7 @@
-## standard
 from tempfile import NamedTemporaryFile
 import base64
 import os
 
-# third-party
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -15,7 +13,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from pypdf import PdfReader, PdfWriter
 
-# custom imports
+
 from html_templates import css, bot_template, user_template, expander_css
 
 load_dotenv()
@@ -47,8 +45,23 @@ def process_file(document):
 
 
 ## T6: Method for Handling User Input
-def handle_user_input():
-    pass
+def handle_input(query):
+    response = st.session_state.conversation(
+        {"question": query, "chat_history": st.session_state.history},
+        return_only_outputs=True,
+    )
+
+    st.session_state.history += [(query, response["answer"])]
+
+    st.session_state.page_number = list(response["source_documents"][0])[1][1]["page"]
+
+    for _, message in enumerate(st.session_state.history):
+        st.session_state.expander.write(
+            user_template.replace("{{MSG}}", message[0]), unsafe_allow_html=True
+        )
+        st.session_state.expander.write(
+            bot_template.replace("{{MSG}}", message[1]), unsafe_allow_html=True
+        )
 
 
 def main():
@@ -80,7 +93,9 @@ def main():
 
         st.write(st.session_state.user_input)
 
-        with st.expander("Your Chat", expanded=True):
+        st.session_state.expander = st.expander("Your Chat", expanded=True)
+
+        with st.session_state.expander:
             st.markdown(expander_css, unsafe_allow_html=True)
 
         ## T5: Load and Process the PDF
