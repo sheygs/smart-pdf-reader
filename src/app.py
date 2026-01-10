@@ -1,5 +1,4 @@
 from tempfile import NamedTemporaryFile
-import base64
 
 # import os
 
@@ -13,7 +12,8 @@ from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
-from pypdf import PdfReader, PdfWriter
+from pypdf import PdfReader
+from pdf2image import convert_from_path
 
 from html_templates import css, bot_template, user_template, expander_css
 
@@ -134,25 +134,67 @@ def main():
             with NamedTemporaryFile(suffix=".pdf", delete=False) as temp:
                 temp.write(st.session_state.pdf_file.getvalue())
                 temp.seek(0)
-                reader = PdfReader(temp.name)
 
-                pdf_writer = PdfWriter()
+                try:
+                    # Convert PDF pages to images (works reliably on Streamlit Cloud)
+                    current_page = st.session_state.page_num
 
-                current_page = st.session_state.page_num
+                    # Calculate page range (current page ± 2 pages)
+                    reader = PdfReader(temp.name)
+                    total_pages = len(reader.pages)
 
-                start = max(current_page - 2, 0)
-                end = min(current_page + 2, len(reader.pages) - 1)
+                    start_page = max(current_page - 2, 0)
+                    end_page = min(current_page + 2, total_pages - 1)
 
-                while start <= end:
-                    pdf_writer.add_page(reader.pages[start])
-                    start += 1
+                    st.write(
+                        f"Displaying pages {start_page + 1} to {end_page + 1} of {total_pages}"
+                    )
 
-                with NamedTemporaryFile(suffix=".pdf", delete=False) as temp1:
-                    pdf_writer.write(temp1.name)
-                    with open(temp1.name, "rb") as f:
-                        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
-                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}#page=1" width="100%" height="900" type="application/pdf" frameborder="0"></iframe>'
-                        st.markdown(pdf_display, unsafe_allow_html=True)
+                    # Convert PDF pages to images. first_page is 1-indexed for pdf2image
+                    images = convert_from_path(
+                        temp.name,
+                        first_page=start_page + 1,
+                        last_page=end_page + 1,
+                        dpi=150,
+                    )
+
+                    # Display the answer page first (highlighted)
+                    answer_page_index = current_page - start_page
+
+                    if 0 <= answer_page_index < len(images):
+                        st.markdown("### 📍 Answer found on this page:")
+                        st.image(
+                            images[answer_page_index],
+                            caption=f"Page {current_page + 1} (Answer Source)",
+                            width="stretch",
+                        )
+
+                    # Display other pages for context
+                    if len(images) > 1:
+                        st.markdown("### 📄 Context pages:")
+                        for idx, image in enumerate(images):
+                            if (
+                                idx != answer_page_index
+                            ):  # Skip the answer page we already showed
+                                st.image(
+                                    image,
+                                    caption=f"Page {start_page + idx + 1}",
+                                    width="stretch",
+                                )
+
+                except Exception as e:
+                    st.error(f"Error displaying PDF: {str(e)}")
+                    st.info(
+                        "Try using the download button below to view the PDF locally"
+                    )
+
+                    # fallback: Provide download button
+                    st.download_button(
+                        label="Download PDF",
+                        data=st.session_state.pdf_file.getvalue(),
+                        file_name="document.pdf",
+                        mime="application/pdf",
+                    )
 
 
 if __name__ == "__main__":
