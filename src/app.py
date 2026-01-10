@@ -1,30 +1,31 @@
 from tempfile import NamedTemporaryFile
 import base64
-import os
+
+# import os
 
 import streamlit as st
 from dotenv import load_dotenv
 
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.embeddings import OpenAIEmbeddings
+
+# from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from pypdf import PdfReader, PdfWriter
 
-
 from html_templates import css, bot_template, user_template, expander_css
 
 load_dotenv()
 
-openai_key = os.getenv("OPENAI_API_KEY")
-huggingface_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+# openai_key = os.getenv("OPENAI_API_KEY")
+# huggingface_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 
 # T2: process user input
 def process_file(document):
-    # available models here: https://huggingface.co/spaces/mteb/leaderboard
+    # models available @ https://huggingface.co/spaces/mteb/leaderboard
     model_name = "thenlper/gte-small"
     model_kwargs = {"device": "cpu"}
     encode_kwargs = {"normalize_embeddings": False}
@@ -44,16 +45,16 @@ def process_file(document):
     return chain
 
 
-## T6: Method for Handling User Input
-def handle_input(query):
-    response = st.session_state.conversation(
+## T6: handle user input
+def handle_input(query: str):
+    response = st.session_state.conversation.invoke(
         {"question": query, "chat_history": st.session_state.history},
         return_only_outputs=True,
     )
 
     st.session_state.history += [(query, response["answer"])]
 
-    st.session_state.page_number = list(response["source_documents"][0])[1][1]["page"]
+    st.session_state.page_num = list(response["source_documents"][0])[1][1]["page"]
 
     for _, message in enumerate(st.session_state.history):
         st.session_state.expander.write(
@@ -65,9 +66,9 @@ def handle_input(query):
 
 
 def main():
-    ## T3: Create Web-page Layout
+    ## T3: create Web-page Layout
     st.set_page_config(
-        page_title="Interactive PDF Reader", layout="wide", page_icon="📕"
+        page_title="Interactive PDF Reader", layout="wide", page_icon="📚"
     )
 
     st.markdown(css, unsafe_allow_html=True)
@@ -81,47 +82,77 @@ def main():
     if "page_num" not in st.session_state:
         st.session_state.page_num = 0
 
-    column1, column2 = st.columns([1, 1])
-    # column1, column2 = st.columns(2)
+    # column1, column2 = st.columns([1, 1])
+    column1, column2 = st.columns(2)
 
     with column1:
-        st.header("Interactive Reader 📕")
+        st.header("Interactive Reader 📚")
 
         user_input = st.text_input("Ask a question from the contents of the PDF:")
 
         st.session_state.user_input = user_input
 
-        st.write(st.session_state.user_input)
+        # st.write(st.session_state.user_input)  # logging
 
-        st.session_state.expander = st.expander("Your Chat", expanded=True)
+        st.session_state.expander = st.expander("Your Chat History", expanded=True)
 
         with st.session_state.expander:
             st.markdown(expander_css, unsafe_allow_html=True)
 
-        ## T5: Load and Process the PDF
+        ## T5: load and process the PDF
         st.header("Your Documents")
 
         st.session_state.pdf_file = st.file_uploader(
             "Upload a PDF here and click ‘Process’"
         )
 
-        st.write(st.session_state.pdf_file)
+        # st.write(st.session_state.pdf_file)
 
-        if st.button("Process", key="b"):
+        if st.button("Process", key="a"):
             with st.spinner("Processing..."):
                 if st.session_state.pdf_file is not None:
-                    with NamedTemporaryFile(suffix="pdf") as temp:
-                        # st.write(temp)
-                        # st.write(st.session_state.pdf_file.getvalue())
+                    # TODO: handle non-pdf docs
+                    with NamedTemporaryFile(suffix=".pdf") as temp:
                         temp.write(st.session_state.pdf_file.getvalue())
                         temp.seek(0)
                         loader = PyPDFLoader(temp.name)
                         pdf = loader.load()
                         st.session_state.conversation = process_file(pdf)
-                        print({"session_conversation": st.session_state.conversation})
                         st.markdown("Done processing. You may now ask a question.")
 
-    ## T7: Handle query and display pages
+                else:
+                    st.write("Please provide a PDF file")
+
+    ## T7: handle query & display pages
+    with column2:
+        if st.session_state.user_input and st.session_state.conversation:
+            handle_input(st.session_state.user_input)
+        elif st.session_state.user_input:
+            st.warning("Please upload and process a PDF first")
+
+        if st.session_state.get("pdf_file"):
+            with NamedTemporaryFile(suffix=".pdf", delete=False) as temp:
+                temp.write(st.session_state.pdf_file.getvalue())
+                temp.seek(0)
+                reader = PdfReader(temp.name)
+
+                pdf_writer = PdfWriter()
+
+                current_page = st.session_state.page_num
+
+                start = max(current_page - 2, 0)
+                end = min(current_page + 2, len(reader.pages) - 1)
+
+                while start <= end:
+                    pdf_writer.add_page(reader.pages[start])
+                    start += 1
+
+                with NamedTemporaryFile(suffix=".pdf", delete=False) as temp1:
+                    pdf_writer.write(temp1.name)
+                    with open(temp1.name, "rb") as f:
+                        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}#page=1" width="100%" height="900" type="application/pdf" frameborder="0"></iframe>'
+                        st.markdown(pdf_display, unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
