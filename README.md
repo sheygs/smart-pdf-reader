@@ -54,7 +54,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 4. **Set up environment variables**
 
-   Create a `.env` file in the root directory:
+   Rename the `.env.dev` file to `.env` in the root directory:
 
 ```env
    OPENAI_API_KEY=your_openai_api_key_here
@@ -103,9 +103,22 @@ smart-pdf-reader/
 5. **Answer Generation**: Relevant chunks are passed to GPT model with the user's question
 6. **Response Display**: AI-generated answer is shown with source page references
 
+## Limitations
+
+- **File Format Support**: Currently only supports PDF files. Support for other document formats (Word, TXT, etc.) is planned for future releases
+- **Internet Connection Required**: Active internet connection needed for API calls to OpenAI and HuggingFace
+- **API Costs**: OpenAI API usage incurs costs based on usage. Monitor your API usage to avoid unexpected charges
+- **PDF Size**: Very large PDFs (100+ pages) may take longer to process and could impact performance
+- **Language Support**: Best performance with English text. Other languages may work but have not been extensively tested
+- **Memory Usage**: Processing large documents requires sufficient system memory. Close other applications if you experience slowdowns
+
 ## Acknowledgments
 
 - OpenAI for GPT models
 - LangChain team for the excellent framework
 - Streamlit for the intuitive web framework
 - HuggingFace for open-source embedding models
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
