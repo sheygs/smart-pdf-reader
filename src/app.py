@@ -3,7 +3,7 @@ import base64
 
 import streamlit as st
 
-from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain_huggingface import HuggingFaceEmbeddings
 
 # from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
@@ -17,6 +17,7 @@ from html_templates import css, bot_template, user_template, expander_css
 from config import model_config, api_config, ui_config, pdf_config
 from core.document_processor import DocumentProcessor
 from core.embeddings import EmbeddingService
+from core.vector_store import VectorStore
 
 
 # T2: process user input
@@ -36,7 +37,11 @@ def process_file(document):
     embedding_service = EmbeddingService()
     embeddings = embedding_service.get_embeddings()
 
-    search_pdf = Chroma.from_documents(document, embeddings)
+    # search_pdf = Chroma.from_documents(document, embeddings)
+
+    vector_store = VectorStore(embeddings)
+    vector_store.create_from_store(document)
+    retriever = vector_store.as_retriever(model_config.retrieval_k)
 
     chain = ConversationalRetrievalChain.from_llm(
         # ChatOpenAI automatically picks up the API keys from environment variables
@@ -44,9 +49,10 @@ def process_file(document):
         llm=ChatOpenAI(
             temperature=model_config.llm_temperature, api_key=api_config.openai_api_key
         ),
-        retriever=search_pdf.as_retriever(
-            search_kwargs={"k": model_config.retrieval_k}
-        ),
+        # retriever=search_pdf.as_retriever(
+        #     search_kwargs={"k": model_config.retrieval_k}
+        # ),
+        retriever=retriever,
         return_source_documents=True,
     )
 
