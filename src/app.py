@@ -44,10 +44,10 @@ def handle_user_query(question: str):
     conversation = SessionManager.get("conversation")
     history = SessionManager.get("history")
 
-    # get response
+    # response
     response = ConversationService().query(conversation.invoke, question, history)
 
-    # update history
+    # Update history
     SessionManager.append_to_history(question, response["answer"])
 
     # Update page num
