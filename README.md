@@ -13,10 +13,13 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 - **AI-Powered Q&A**: Ask questions about your PDF content and get intelligent answers
 - **Semantic Search**: Uses vector embeddings to find relevant content accurately
 - **Conversational Memory**: Maintains chat history for context-aware follow-up questions
-- **Source Citation**: Displays the exact pages referenced in answers via embedded PDF viewer
+- **Answer-First PDF Display**: Highlights the exact page containing the answer with 📍 indicator, followed by context pages
+- **Image-Based PDF Rendering**: Reliable cross-platform PDF viewing that works on all deployment environments
+- **Smart Page Context**: Automatically displays surrounding pages (±2 pages) for better understanding
 - **Conversational Interface**: Natural chat experience powered by GPT-3.5/GPT-4
 - **Simple UI**: Clean, intuitive interface built with Streamlit
 - **Modular Architecture**: Well-organized codebase with separation of concerns for easy maintenance and extension
+- **Performance Optimized**: Cached PDF-to-image conversion for faster repeated access
 
 ## Technologies
 
@@ -25,12 +28,15 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 - **[OpenAI GPT](https://openai.com/)** - Large language model for answer generation
 - **[Chroma](https://www.trychroma.com/)** - Vector database for embeddings
 - **[HuggingFace Transformers](https://huggingface.co/)** - Embedding models
+- **[pdf2image](https://github.com/Belval/pdf2image)** - PDF to image conversion for reliable rendering
+- **[Poppler](https://poppler.freedesktop.org/)** - PDF rendering engine
 
 ## Prerequisites
 
 - Python 3.12 (recommended) or 3.10-3.13
 - OpenAI API key
 - HUGGINGFACE API token
+- Poppler (system dependency for PDF rendering)
 
 ## Installation
 
@@ -48,20 +54,40 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
    source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. **Install dependencies**
+3. **Install system dependencies**
 
-```bash
+   **For PDF rendering support**, install Poppler:
+
+   - **macOS**:
+
+     ```bash
+     brew install poppler
+     ```
+
+   - **Linux (Ubuntu/Debian)**:
+
+     ```bash
+     sudo apt-get update
+     sudo apt-get install -y poppler-utils
+     ```
+
+   - **Windows**:
+     Download from [poppler releases](https://github.com/oschwartz10612/poppler-windows/releases/) and add to PATH
+
+4. **Install Python dependencies**
+
+   ```bash
    pip install -r requirements.txt
-```
+   ```
 
-4. **Set up environment variables**
+5. **Set up environment variables**
 
    Rename the `.env.dev` file to `.env` in the root directory:
 
-```env
+   ```env
    OPENAI_API_KEY=your_openai_api_key_here
    HUGGINGFACEHUB_API_TOKEN=your_huggingface_api_token_here
-```
+   ```
 
 ## Usage
 
@@ -76,10 +102,16 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
    - Click on the file uploader in the sidebar
    - Select a PDF document from your local machine
 
-3. **Ask questions**
+3. **Process the PDF**
+
+   - Click the "Process" button to analyze the document
+   - Wait for the processing to complete
+
+4. **Ask questions**
    - Type your question in the chat input
    - The AI will analyze the PDF and provide relevant answers
-   - Referenced pages will be displayed for context
+   - The answer page will be displayed first with a 📍 indicator
+   - Context pages (±2 pages) will be shown below for additional context
 
 ## Project Structure
 
@@ -87,11 +119,11 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 smart-pdf-reader/
 │
 ├── src/
-│   ├── app.py                      # Main application entry point
-│   ├── config.py                   # Configuration management
+│   ├── app.py                     # Main application entry point
+│   ├── config.py                  # Configuration management
 │   │
-│   ├── core/                       # Core business logic
-│   │   ├── conversation.py         # Conversation service (RAG chain)
+│   ├── core/                      # Core business logic
+│   │   ├── conversation.py        # Conversation service (RAG chain)
 │   │   ├── document_processor.py  # PDF document processing
 │   │   ├── embeddings.py          # Embedding service
 │   │   └── vector_store.py        # Vector database operations
@@ -115,34 +147,45 @@ smart-pdf-reader/
 ## How It Works
 
 1. **PDF Processing**: Uploaded PDFs are parsed and split into manageable chunks using PyPDF
-2. **Embedding Creation**: Text chunks are converted to vector embeddings using HuggingFace models
-3. **Vector Storage**: Embeddings are stored in Chroma vector database for efficient retrieval
+2. **Embedding Creation**: Text chunks are converted to vector embeddings using HuggingFace models (default: `thenlper/gte-small`)
+3. **Vector Storage**: Embeddings are stored in Chroma vector database for efficient similarity search
 4. **Conversational RAG**: Uses LangChain's retrieval chain with chat history awareness
 5. **Query Processing**: User questions are contextualized with chat history and matched against stored vectors
 6. **Answer Generation**: Relevant chunks are passed to GPT model with the contextualized question
-7. **Response Display**: AI-generated answer is shown with source page references in an embedded PDF viewer
+7. **Answer-First Display**:
+   - The page containing the answer is displayed first with a 📍 indicator
+   - Surrounding pages (±2 pages) are shown below for context
+   - PDF pages are converted to high-quality images (150 DPI) for reliable cross-platform rendering
+   - Caching ensures fast repeated access to the same pages
 
 ## Architecture
 
-The project follows a modular architecture pattern:
+The project follows a modular architecture pattern with clear separation of concerns:
 
-- **Core Module**: Business logic for document processing, embeddings, vector store, and conversation management
-- **UI Module**: Streamlit interface components, layouts, and session management
-- **Utils Module**: Reusable utilities for file handling and PDF rendering
-- **Config Module**: Centralized configuration and environment validation
+- **Core Module** (`src/core/`): Business logic for document processing, embeddings, vector store, and conversation management
+- **UI Module** (`src/ui/`): Streamlit interface components, layouts, and session management
+- **Utils Module** (`src/utils/`): Reusable utilities for file handling and image-based PDF rendering
+- **Config Module** (`src/config.py`): Centralized configuration and environment validation
 
-This separation of concerns makes the codebase maintainable, testable, and easier to extend.
+### Key Design Decisions
 
-## Known Issues & Upcoming Changes
+- **Image-Based PDF Rendering**: Uses `pdf2image` instead of iframe embedding for reliable cross-platform display
+- **Answer-First UX**: Displays the answer page prominently before showing context pages
+- **Cached Rendering**: PDF-to-image conversion is cached using `@st.cache_data` for better performance
+- **Configurable Context**: Context window (pages before/after answer) is configurable via `src/config.py`
 
-⚠️ **LangChain Deprecation Warnings**: The project currently uses some deprecated LangChain APIs that will be removed in future versions. See [DEPRECATION_FIXES.md](DEPRECATION_FIXES.md) for:
+## Configuration
 
-- Migration from `ConversationalRetrievalChain` to LCEL (LangChain Expression Language)
-- Updating to use `.invoke()` instead of `__call__()`
-- Moving to `langchain-chroma` package
-- Fixing fragile page number extraction
+You can customize the application behavior by modifying `src/config.py`:
 
-These updates are documented with step-by-step migration instructions.
+```python
+@dataclass
+class PDFConfig:
+    context_page_before: int = 2  # Pages to show before answer page
+    context_page_after: int = 2   # Pages to show after answer page
+    default_page: int = 0         # Default page to display
+    dpi: int = 150                # Image resolution for PDF rendering
+```
 
 ## Limitations
 
@@ -160,7 +203,6 @@ Contributions are welcome! The project follows a modular architecture to make it
 1. **Core Features**: Add new functionality in the `src/core/` module
 2. **UI Improvements**: Enhance the interface in the `src/ui/` module
 3. **Utilities**: Add helper functions in the `src/utils/` module
-4. **Bug Fixes**: See [DEPRECATION_FIXES.md](DEPRECATION_FIXES.md) for known issues that need fixing
 
 Please ensure your code follows the existing patterns and includes appropriate documentation.
 
