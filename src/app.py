@@ -9,28 +9,32 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.vectorstores import Chroma
-from langchain_community.document_loaders import PyPDFLoader
+
+# from langchain_community.document_loaders import PyPDFLoader
 from pypdf import PdfReader, PdfWriter
 
 from html_templates import css, bot_template, user_template, expander_css
-from config import ModelConfig, APIConfig, UIConfig, PDFConfig
+from config import model_config, api_config, ui_config, pdf_config
+from core.document_processor import DocumentProcessor
+from core.embeddings import EmbeddingService
 
 
 # T2: process user input
 def process_file(document):
     # models available @ https://huggingface.co/spaces/mteb/leaderboard
-    model_config = ModelConfig()
-    api_config = APIConfig()
 
-    model_name = model_config.embedding_model
-    model_kwargs = {"device": model_config.embedding_device}
-    encode_kwargs = {"normalize_embeddings": model_config.normalize_embeddings}
+    # model_name = model_config.embedding_model
+    # model_kwargs = {"device": model_config.embedding_device}
+    # encode_kwargs = {"normalize_embeddings": model_config.normalize_embeddings}
 
     api_config.validate()
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name=model_name, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
-    )
+    # embeddings = HuggingFaceEmbeddings(
+    #     model_name=model_name, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
+    # )
+
+    embedding_service = EmbeddingService()
+    embeddings = embedding_service.get_embeddings()
 
     search_pdf = Chroma.from_documents(document, embeddings)
 
@@ -71,7 +75,6 @@ def handle_input(query: str):
 
 def main():
     ## T3: create Web-page Layout
-    ui_config = UIConfig()
 
     st.set_page_config(
         page_title=ui_config.page_title,
@@ -122,9 +125,14 @@ def main():
                     with NamedTemporaryFile(suffix=".pdf") as temp:
                         temp.write(st.session_state.pdf_file.getvalue())
                         temp.seek(0)
-                        loader = PyPDFLoader(temp.name)
-                        pdf = loader.load()
-                        st.session_state.conversation = process_file(pdf)
+                        st.write(temp.name)
+                        # loader = PyPDFLoader(temp.name)
+                        # pdf = loader.load()
+
+                        pdf_docs = DocumentProcessor.load_pdf(temp.name)
+
+                        print({"pdf": pdf_docs})
+                        st.session_state.conversation = process_file(pdf_docs)
                         st.markdown("Done processing. You may now ask a question.")
 
                 else:
@@ -144,8 +152,6 @@ def main():
                 reader = PdfReader(temp.name)
 
                 pdf_writer = PdfWriter()
-
-                pdf_config = PDFConfig()
 
                 current_page = st.session_state.page_num
 
