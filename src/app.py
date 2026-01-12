@@ -4,13 +4,12 @@ import base64
 import streamlit as st
 
 # from langchain_huggingface import HuggingFaceEmbeddings
-
 # from langchain_community.embeddings import OpenAIEmbeddings
 # from langchain_openai import ChatOpenAI
 # from langchain.chains import ConversationalRetrievalChain
 # from langchain_community.vectorstores import Chroma
-
 # from langchain_community.document_loaders import PyPDFLoader
+
 from pypdf import PdfReader, PdfWriter
 
 from html_templates import css, bot_template, user_template, expander_css
