@@ -6,9 +6,9 @@ import streamlit as st
 # from langchain_huggingface import HuggingFaceEmbeddings
 
 # from langchain_community.embeddings import OpenAIEmbeddings
-from langchain_openai import ChatOpenAI
-from langchain.chains import ConversationalRetrievalChain
-from langchain_community.vectorstores import Chroma
+# from langchain_openai import ChatOpenAI
+# from langchain.chains import ConversationalRetrievalChain
+# from langchain_community.vectorstores import Chroma
 
 # from langchain_community.document_loaders import PyPDFLoader
 from pypdf import PdfReader, PdfWriter
@@ -18,6 +18,7 @@ from config import model_config, api_config, ui_config, pdf_config
 from core.document_processor import DocumentProcessor
 from core.embeddings import EmbeddingService
 from core.vector_store import VectorStore
+from core.conversation import ConversationService
 
 
 # T2: process user input
@@ -43,30 +44,36 @@ def process_file(document):
     vector_store.create_from_store(document)
     retriever = vector_store.as_retriever(model_config.retrieval_k)
 
-    chain = ConversationalRetrievalChain.from_llm(
-        # ChatOpenAI automatically picks up the API keys from environment variables
-        # however, you can explicitly add it there to utilise the APIConfig
-        llm=ChatOpenAI(
-            temperature=model_config.llm_temperature, api_key=api_config.openai_api_key
-        ),
-        # retriever=search_pdf.as_retriever(
-        #     search_kwargs={"k": model_config.retrieval_k}
-        # ),
-        retriever=retriever,
-        return_source_documents=True,
-    )
+    # chain = ConversationalRetrievalChain.from_llm(
+    #     # ChatOpenAI automatically picks up the API keys from environment variables
+    #     # however, you can explicitly add it there to utilise the APIConfig
+    #     llm=ChatOpenAI(
+    #         temperature=model_config.llm_temperature, api_key=api_config.openai_api_key
+    #     ),
+    #     # retriever=search_pdf.as_retriever(
+    #     #     search_kwargs={"k": model_config.retrieval_k}
+    #     # ),
+    #     retriever=retriever,
+    #     return_source_documents=True,
+    # )
 
+    # return chain
+    conversation_service = ConversationService()
+    chain = conversation_service.create_chain(retriever)
     return chain
 
 
 ## T6: handle user input
-def handle_input(query: str):
-    response = st.session_state.conversation.invoke(
-        {"question": query, "chat_history": st.session_state.history},
-        return_only_outputs=True,
+def handle_input(question: str):
+    response = ConversationService().query(
+        st.session_state.conversation.invoke, question, st.session_state.history
     )
+    # response = st.session_state.conversation.invoke(
+    #     {"question": question, "chat_history": st.session_state.history},
+    #     return_only_outputs=True,
+    # )
 
-    st.session_state.history += [(query, response["answer"])]
+    st.session_state.history += [(question, response["answer"])]
 
     st.session_state.page_num = list(response["source_documents"][0])[1][1]["page"]
 
