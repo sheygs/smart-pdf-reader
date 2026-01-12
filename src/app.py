@@ -12,12 +12,13 @@ import streamlit as st
 
 from pypdf import PdfReader, PdfWriter
 
-from html_templates import css, bot_template, user_template, expander_css
-from config import model_config, api_config, ui_config, pdf_config
 from core.document_processor import DocumentProcessor
 from core.embeddings import EmbeddingService
 from core.vector_store import VectorStore
 from core.conversation import ConversationService
+from ui.session import SessionManager
+from ui.html_templates import css, bot_template, user_template, expander_css
+from config import model_config, api_config, ui_config, pdf_config
 
 
 # T2: process user input
@@ -96,14 +97,16 @@ def main():
 
     st.markdown(css, unsafe_allow_html=True)
 
-    if "conversation" not in st.session_state:
-        st.session_state.conversation = None
+    SessionManager.initialize()
 
-    if "history" not in st.session_state:
-        st.session_state.history = []
+    # if "conversation" not in st.session_state:
+    #     st.session_state.conversation = None
 
-    if "page_num" not in st.session_state:
-        st.session_state.page_num = 0
+    # if "history" not in st.session_state:
+    #     st.session_state.history = []
+
+    # if "page_num" not in st.session_state:
+    #     st.session_state.page_num = 0
 
     # column1, column2 = st.columns([1, 1])
     column1, column2 = st.columns(2)
@@ -168,6 +171,7 @@ def main():
                 current_page = st.session_state.page_num
 
                 start = max(current_page - pdf_config.context_page_before, 0)
+
                 end = min(
                     current_page + pdf_config.context_page_after, len(reader.pages) - 1
                 )
