@@ -1,3 +1,4 @@
+import streamlit as st
 from typing import List, Tuple
 from pypdf import PdfReader
 from pdf2image import convert_from_path
@@ -9,12 +10,13 @@ class PDFRenderer:
     """Handles PDF page extraction and rendering"""
 
     @staticmethod
+    @st.cache_data
     def convert_pages_to_images(
         pdf_path: str,
         current_page: int,
         pages_before: int = pdf_config.context_page_before,
         pages_after: int = pdf_config.context_page_after,
-        dpi: int = 150,
+        dpi: int = pdf_config.dpi,
     ) -> Tuple[List[Image], int, int, int, int]:
         """
         Convert PDF pages to images with context pages around current page

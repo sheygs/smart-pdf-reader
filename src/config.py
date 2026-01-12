@@ -23,6 +23,7 @@ class PDFConfig:
     context_page_before: int = 2
     context_page_after: int = 2
     default_page: int = 0
+    dpi: int = 150
 
 
 @dataclass

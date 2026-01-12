@@ -66,7 +66,8 @@ class PDFComponents:
         if len(images) > 1:
             st.markdown("### 📄 Context pages:")
             for idx, image in enumerate(images):
-                if idx != answer_page_index:  # Skip the answer page we already showed
+                # Skip the answer page we already showed
+                if idx != answer_page_index:
                     st.image(
                         image,
                         caption=f"Page {start_page + idx + 1}",
