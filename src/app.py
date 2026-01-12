@@ -1,10 +1,7 @@
 from tempfile import NamedTemporaryFile
 import base64
 
-# import os
-
 import streamlit as st
-from dotenv import load_dotenv
 
 from langchain_huggingface import HuggingFaceEmbeddings
 
@@ -16,19 +13,20 @@ from langchain_community.document_loaders import PyPDFLoader
 from pypdf import PdfReader, PdfWriter
 
 from html_templates import css, bot_template, user_template, expander_css
-
-load_dotenv()
-
-# openai_key = os.getenv("OPENAI_API_KEY")
-# huggingface_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+from config import ModelConfig, APIConfig, UIConfig, PDFConfig
 
 
 # T2: process user input
 def process_file(document):
     # models available @ https://huggingface.co/spaces/mteb/leaderboard
-    model_name = "thenlper/gte-small"
-    model_kwargs = {"device": "cpu"}
-    encode_kwargs = {"normalize_embeddings": False}
+    model_config = ModelConfig()
+    api_config = APIConfig()
+
+    model_name = model_config.embedding_model
+    model_kwargs = {"device": model_config.embedding_device}
+    encode_kwargs = {"normalize_embeddings": model_config.normalize_embeddings}
+
+    api_config.validate()
 
     embeddings = HuggingFaceEmbeddings(
         model_name=model_name, model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
@@ -37,8 +35,14 @@ def process_file(document):
     search_pdf = Chroma.from_documents(document, embeddings)
 
     chain = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(temperature=0.3),
-        retriever=search_pdf.as_retriever(search_kwargs={"k": 2}),
+        # ChatOpenAI automatically picks up the API keys from environment variables
+        # however, you can explicitly add it there to utilise the APIConfig
+        llm=ChatOpenAI(
+            temperature=model_config.llm_temperature, api_key=api_config.openai_api_key
+        ),
+        retriever=search_pdf.as_retriever(
+            search_kwargs={"k": model_config.retrieval_k}
+        ),
         return_source_documents=True,
     )
 
@@ -67,8 +71,12 @@ def handle_input(query: str):
 
 def main():
     ## T3: create Web-page Layout
+    ui_config = UIConfig()
+
     st.set_page_config(
-        page_title="Interactive PDF Reader", layout="wide", page_icon="📚"
+        page_title=ui_config.page_title,
+        layout=ui_config.page_layout,
+        page_icon=ui_config.page_icon,
     )
 
     st.markdown(css, unsafe_allow_html=True)
@@ -111,7 +119,6 @@ def main():
         if st.button("Process", key="a"):
             with st.spinner("Processing..."):
                 if st.session_state.pdf_file is not None:
-                    # TODO: handle non-pdf docs
                     with NamedTemporaryFile(suffix=".pdf") as temp:
                         temp.write(st.session_state.pdf_file.getvalue())
                         temp.seek(0)
@@ -138,10 +145,14 @@ def main():
 
                 pdf_writer = PdfWriter()
 
+                pdf_config = PDFConfig()
+
                 current_page = st.session_state.page_num
 
-                start = max(current_page - 2, 0)
-                end = min(current_page + 2, len(reader.pages) - 1)
+                start = max(current_page - pdf_config.context_page_before, 0)
+                end = min(
+                    current_page + pdf_config.context_page_after, len(reader.pages) - 1
+                )
 
                 while start <= end:
                     pdf_writer.add_page(reader.pages[start])
