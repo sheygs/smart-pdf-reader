@@ -3,6 +3,7 @@ from config import model_config
 
 
 class EmbeddingService:
+    
     def __init__(
         self,
         model_name: str = model_config.embedding_model,

@@ -1,6 +1,6 @@
 import base64
 from pypdf import PdfReader, PdfWriter
-from src.config import pdf_config
+from config import pdf_config
 
 
 class PDFRenderer:
@@ -45,7 +45,7 @@ class PDFRenderer:
         start = max(current_page - pages_before, 0)
         end = min(current_page + pages_after, len(reader.pages) - 1)
 
-        for page_num in (start, end + 1):
+        for page_num in range(start, end + 1):
             writer.add_page(reader.pages[page_num])
 
         # while start <= end:

@@ -20,23 +20,7 @@ class FileHandler:
         Returns:
             Path to temporary file
         """
-        with NamedTemporaryFile(suffix, delete=False) as temp:
+        with NamedTemporaryFile(suffix=suffix, delete=False) as temp:
             temp.write(uploaded_file.getvalue())
-            temp.seek(0)
-            return temp
-
-    @staticmethod
-    def write_temp_pdf(file_bytes: bytes) -> str:
-        """
-        Write bytes to temporary PDF file
-
-        Args:
-            file_bytes: PDF file bytes
-
-        Returns:
-            Path to temporary file
-        """
-        with NamedTemporaryFile(suffix=".pdf", delete=False) as temp:
-            temp.write(file_bytes)
             temp.seek(0)
             return temp.name

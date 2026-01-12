@@ -10,6 +10,7 @@ load_dotenv()
 
 @dataclass
 class ModelConfig:
+    # models available @ https://huggingface.co/spaces/mteb/leaderboard
     embedding_model: str = "thenlper/gte-small"  # add as an environment variable
     embedding_device: Literal["cpu", "cuda"] = "cpu"
     llm_temperature: float = 0.2

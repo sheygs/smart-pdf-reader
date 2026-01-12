@@ -1,6 +1,6 @@
 import streamlit as st
-from src.config import ui_config
-from session import SessionManager
+from config import ui_config
+from .session import SessionManager
 
 
 class AppLayout:
