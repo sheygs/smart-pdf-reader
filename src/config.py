@@ -1,3 +1,5 @@
+"""Configuration and settings"""
+
 from dataclasses import dataclass
 from typing import Literal
 import os
@@ -40,3 +42,10 @@ class APIConfig:
         if not self.huggingface_api_token:
             raise ValueError("HUGGINGFACEHUB_API_TOKEN missing in environment config")
         return True
+
+
+# global config instances
+model_config = ModelConfig()
+pdf_config = PDFConfig()
+ui_config = UIConfig()
+api_config = APIConfig()
