@@ -56,7 +56,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 4. **Set up environment variables**
 
-   Rename the `.env.dev` file to `.env` in the root directory:
+   Rename the `.env.dev` file to `.env` in the root directory and populate the required keys:
 
 ```env
    OPENAI_API_KEY=your_openai_api_key_here
@@ -87,11 +87,11 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 smart-pdf-reader/
 │
 ├── src/
-│   ├── app.py                      # Main application entry point
-│   ├── config.py                   # Configuration management
+│   ├── app.py                     # Main application entry point
+│   ├── config.py                  # Configuration management
 │   │
-│   ├── core/                       # Core business logic
-│   │   ├── conversation.py         # Conversation service (RAG chain)
+│   ├── core/                      # Core business logic
+│   │   ├── conversation.py        # Conversation service (RAG chain)
 │   │   ├── document_processor.py  # PDF document processing
 │   │   ├── embeddings.py          # Embedding service
 │   │   └── vector_store.py        # Vector database operations
@@ -133,17 +133,6 @@ The project follows a modular architecture pattern:
 
 This separation of concerns makes the codebase maintainable, testable, and easier to extend.
 
-## Known Issues & Upcoming Changes
-
-⚠️ **LangChain Deprecation Warnings**: The project currently uses some deprecated LangChain APIs that will be removed in future versions. See [DEPRECATION_FIXES.md](DEPRECATION_FIXES.md) for:
-
-- Migration from `ConversationalRetrievalChain` to LCEL (LangChain Expression Language)
-- Updating to use `.invoke()` instead of `__call__()`
-- Moving to `langchain-chroma` package
-- Fixing fragile page number extraction
-
-These updates are documented with step-by-step migration instructions.
-
 ## Limitations
 
 - **File Format Support**: Currently only supports PDF files. Support for other document formats (Word, TXT, etc.) is planned for future releases
@@ -160,9 +149,6 @@ Contributions are welcome! The project follows a modular architecture to make it
 1. **Core Features**: Add new functionality in the `src/core/` module
 2. **UI Improvements**: Enhance the interface in the `src/ui/` module
 3. **Utilities**: Add helper functions in the `src/utils/` module
-4. **Bug Fixes**: See [DEPRECATION_FIXES.md](DEPRECATION_FIXES.md) for known issues that need fixing
-
-Please ensure your code follows the existing patterns and includes appropriate documentation.
 
 ## Acknowledgments
 
