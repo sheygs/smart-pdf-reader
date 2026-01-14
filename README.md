@@ -82,7 +82,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 5. **Set up environment variables**
 
-   Rename the `.env.dev` file to `.env` in the root directory:
+   Rename the `.env.dev` file to `.env` in the root directory and populate the required keys:
 
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
@@ -138,7 +138,7 @@ smart-pdf-reader/
 │       ├── file_handlers.py       # File operations
 │       └── pdf_renderer.py        # PDF rendering utilities
 │
-├── requirements.txt               # Python dependencies
+├── requirements.txt              # Python dependencies
 ├── .env.dev                      # Environment variables template
 ├── README.md                     # Project documentation
 └── .gitignore
@@ -203,8 +203,6 @@ Contributions are welcome! The project follows a modular architecture to make it
 1. **Core Features**: Add new functionality in the `src/core/` module
 2. **UI Improvements**: Enhance the interface in the `src/ui/` module
 3. **Utilities**: Add helper functions in the `src/utils/` module
-
-Please ensure your code follows the existing patterns and includes appropriate documentation.
 
 ## Acknowledgments
 
