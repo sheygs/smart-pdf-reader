@@ -57,7 +57,7 @@ def handle_user_query(question: str):
 
     # Render chat
     with SessionManager.get("expander"):
-        ChatComponents.render_chat_hisotory(SessionManager.get("history"))
+        ChatComponents.render_chat_history(SessionManager.get("history"))
 
 
 def render_pdf_viewer():
