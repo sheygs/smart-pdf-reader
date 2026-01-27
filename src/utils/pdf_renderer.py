@@ -1,5 +1,8 @@
-import base64
-from pypdf import PdfReader, PdfWriter
+import streamlit as st
+from typing import List, Tuple
+from pypdf import PdfReader
+from pdf2image import convert_from_path
+from PIL.Image import Image
 from config import pdf_config
 
 
@@ -7,54 +10,42 @@ class PDFRenderer:
     """Handles PDF page extraction and rendering"""
 
     @staticmethod
-    def pdf_to_base64(pdf_bytes: bytes) -> str:
-        """
-        Convert PDF bytes to base64 string
-
-        Args:
-            pdf_bytes: PDF file bytes
-
-        Returns:
-            Base64 encoded string
-        """
-        base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-        return base64_pdf
-
-    @staticmethod
-    def extract_pages_with_context(
+    @st.cache_data
+    def convert_pages_to_images(
         pdf_path: str,
         current_page: int,
         pages_before: int = pdf_config.context_page_before,
         pages_after: int = pdf_config.context_page_after,
-    ) -> bytes:
+        dpi: int = pdf_config.dpi,
+    ) -> Tuple[List[Image], int, int, int, int]:
         """
-        Extract current page with surrounding context
+        Convert PDF pages to images with context pages around current page
 
         Args:
             pdf_path: Path to PDF file
             current_page: Current page number (0-indexed)
             pages_before: Number of pages before current
             pages_after: Number of pages after current
+            dpi: Resolution for image conversion
 
         Returns:
-            PDF bytes containing extracted pages
+            Tuple of (images, start_page, end_page, total_pages, answer_page_index)
         """
         reader = PdfReader(pdf_path)
-        writer = PdfWriter()
+        total_pages = len(reader.pages)
 
-        start = max(current_page - pages_before, 0)
-        end = min(current_page + pages_after, len(reader.pages) - 1)
+        start_page = max(current_page - pages_before, 0)
+        end_page = min(current_page + pages_after, total_pages - 1)
 
-        for page_num in range(start, end + 1):
-            writer.add_page(reader.pages[page_num])
+        # Convert PDF pages to images (first_page is 1-indexed for pdf2image)
+        images = convert_from_path(
+            pdf_path,
+            first_page=start_page + 1,
+            last_page=end_page + 1,
+            dpi=dpi,
+        )
 
-        # while start <= end:
-        #     writer.add_page(reader.pages[start])
-        #     start += 1
+        # Calculate the answer page index within the images list
+        answer_page_index = current_page - start_page
 
-        # Write to bytes
-        from io import BytesIO
-
-        output = BytesIO()
-        writer.write(output)
-        return output.getvalue()
+        return images, start_page, end_page, total_pages, answer_page_index

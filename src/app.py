@@ -61,25 +61,39 @@ def handle_user_query(question: str):
 
 
 def render_pdf_viewer():
+    """
+    Render PDF with answer page displayed prominently and context pages below
+    """
     pdf_file = SessionManager.get("pdf_file")
 
     if not pdf_file:
         return
 
     try:
-
         temp_path = FileHandler.create_temp_file(pdf_file)
-
         current_page = SessionManager.get("page_num")
 
-        pdf_bytes = PDFRenderer.extract_pages_with_context(temp_path, current_page)
+        # Convert PDF pages to images
+        images, start_page, end_page, total_pages, answer_page_index = (
+            PDFRenderer.convert_pages_to_images(temp_path, current_page)
+        )
 
-        base_64 = PDFRenderer.pdf_to_base64(pdf_bytes)
-
-        PDFComponents.render_pdf_viewer(base_64)
+        # Render images with answer page first
+        PDFComponents.render_pdf_images(
+            images, answer_page_index, start_page, end_page, total_pages, current_page
+        )
 
     except Exception as e:
         st.error(f"Error rendering PDF: {str(e)}")
+        st.info("Try using the download button below to view the PDF locally")
+
+        # Fallback: Provide download button
+        st.download_button(
+            label="Download PDF",
+            data=pdf_file.getvalue(),
+            file_name="document.pdf",
+            mime="application/pdf",
+        )
 
 
 def main():

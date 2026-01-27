@@ -30,15 +30,46 @@ class ChatComponents:
 
 class PDFComponents:
     @staticmethod
-    def render_pdf_viewer(base64_pdf: str, page: int = 1, height: int = 900):
-        pdf_display = f"""
-        <iframe
-            src="data:application/pdf;base64,
-            {base64_pdf}#page={page}"
-            width="100%"
-            height="{height}"
-            type="application/pdf"
-            frameborder="0">
-        </iframe>
+    def render_pdf_images(
+        images: list,
+        answer_page_index: int,
+        start_page: int,
+        end_page: int,
+        total_pages: int,
+        current_page: int,
+    ):
         """
-        st.markdown(pdf_display, unsafe_allow_html=True)
+        Render PDF pages as images with answer page displayed first
+
+        Args:
+            images: List of PIL Image objects
+            answer_page_index: Index of answer page in images list
+            start_page: Starting page number (0-indexed)
+            end_page: Ending page number (0-indexed)
+            total_pages: Total number of pages in PDF
+            current_page: Current page number (0-indexed)
+        """
+        st.write(
+            f"Displaying pages {start_page + 1} to {end_page + 1} of {total_pages}"
+        )
+
+        # Display the answer page first (highlighted)
+        if 0 <= answer_page_index < len(images):
+            st.markdown("### 📍 Answer found on this page:")
+            st.image(
+                images[answer_page_index],
+                caption=f"Page {current_page + 1} (Answer Source)",
+                width="stretch",
+            )
+
+        # Display other pages for context
+        if len(images) > 1:
+            st.markdown("### 📄 Context pages:")
+            for idx, image in enumerate(images):
+                # Skip the answer page we already showed
+                if idx != answer_page_index:
+                    st.image(
+                        image,
+                        caption=f"Page {start_page + idx + 1}",
+                        width="stretch",
+                    )
