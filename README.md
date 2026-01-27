@@ -51,13 +51,12 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 ```bash
    python3.12 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate
 ```
 
 3. **Install system dependencies**
 
    **For PDF rendering support**, install Poppler:
-
    - **macOS**:
 
      ```bash
@@ -82,7 +81,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 5. **Set up environment variables**
 
-   Rename the `.env.dev` file to `.env` in the root directory and populate the required keys:
+   Rename the `.env.example` file to `.env` in the root directory and populate the required keys:
 
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
@@ -98,12 +97,10 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 ```
 
 2. **Upload your PDF**
-
    - Click on the file uploader in the sidebar
    - Select a PDF document from your local machine
 
 3. **Process the PDF**
-
    - Click the "Process" button to analyze the document
    - Wait for the processing to complete
 

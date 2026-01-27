@@ -14,8 +14,6 @@ from ui.components import ChatComponents, PDFComponents
 
 
 def initialise_app():
-    """Initialize application configuration and session"""
-    api_config.validate()
     AppLayout.setup_page()
     st.markdown(css, unsafe_allow_html=True)
     SessionManager.initialize()
@@ -39,25 +37,20 @@ def process_uploaded_file(uploaded_file):
     return chain
 
 
-## handle user input
 def handle_user_query(question: str):
     conversation = SessionManager.get("conversation")
-    history = SessionManager.get("history")
+    history = SessionManager.get("history") or []
 
-    # response
-    response = ConversationService().query(conversation.invoke, question, history)
+    response = ConversationService().query(conversation, question, history)
 
-    # Update history
     SessionManager.append_to_history(question, response["answer"])
 
-    # Update page num
     if response.get("source_documents"):
         page_num = list(response["source_documents"][0])[1][1]["page"]
         SessionManager.set("page_num", page_num)
 
-    # Render chat
     with SessionManager.get("expander"):
-        ChatComponents.render_chat_hisotory(SessionManager.get("history"))
+        ChatComponents.render_chat_history(SessionManager.get("history"))
 
 
 def render_pdf_viewer():
@@ -73,12 +66,11 @@ def render_pdf_viewer():
         temp_path = FileHandler.create_temp_file(pdf_file)
         current_page = SessionManager.get("page_num")
 
-        # Convert PDF pages to images
         images, start_page, end_page, total_pages, answer_page_index = (
             PDFRenderer.convert_pages_to_images(temp_path, current_page)
         )
 
-        # Render images with answer page first
+        # render images with answer page first
         PDFComponents.render_pdf_images(
             images, answer_page_index, start_page, end_page, total_pages, current_page
         )
@@ -87,7 +79,6 @@ def render_pdf_viewer():
         st.error(f"Error rendering PDF: {str(e)}")
         st.info("Try using the download button below to view the PDF locally")
 
-        # Fallback: Provide download button
         st.download_button(
             label="Download PDF",
             data=pdf_file.getvalue(),
@@ -106,8 +97,6 @@ def main():
 
         user_input = st.text_input("Ask a question from the contents of the PDF:")
         SessionManager.set("user_input", user_input)
-
-        st.write(SessionManager.get("user_input"))
 
         # chat container
         expander = AppLayout.create_chat_expander()
@@ -134,7 +123,6 @@ def main():
                 else:
                     st.write("Please provide a PDF file")
 
-    ## handle query and display pages
     with column2:
         user_input = SessionManager.get("user_input")
         conversation = SessionManager.get("conversation")

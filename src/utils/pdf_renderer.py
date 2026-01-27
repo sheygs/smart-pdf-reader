@@ -7,7 +7,6 @@ from config import pdf_config
 
 
 class PDFRenderer:
-    """Handles PDF page extraction and rendering"""
 
     @staticmethod
     @st.cache_data
@@ -37,7 +36,7 @@ class PDFRenderer:
         start_page = max(current_page - pages_before, 0)
         end_page = min(current_page + pages_after, total_pages - 1)
 
-        # Convert PDF pages to images (first_page is 1-indexed for pdf2image)
+        # convert PDF pages to images. first_page is 1-indexed for pdf2image
         images = convert_from_path(
             pdf_path,
             first_page=start_page + 1,
@@ -45,7 +44,7 @@ class PDFRenderer:
             dpi=dpi,
         )
 
-        # Calculate the answer page index within the images list
+        # calculate the answer page index within the images list
         answer_page_index = current_page - start_page
 
         return images, start_page, end_page, total_pages, answer_page_index

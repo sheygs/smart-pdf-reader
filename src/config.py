@@ -1,6 +1,4 @@
-"""Configuration and settings"""
-
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Literal
 import os
 from dotenv import load_dotenv
@@ -35,18 +33,26 @@ class UIConfig:
 
 @dataclass
 class APIConfig:
-    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
-    huggingface_api_token: str = os.getenv("HUGGINGFACEHUB_API_TOKEN", "")
+    openai_api_key: str = ""
+    huggingface_api_token: str = ""
+    max_retries: str = ""
+    request_timeout: str = ""
+
+    def __post_init__(self):
+        self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
+        self.huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN", "")
+        self.max_retries = os.getenv("MAX_RETIRES", "")
+        self.request_timeout = os.getenv("REQUEST_TIMEOUT", "")
+        self.validate()
 
     def validate(self):
-        if not self.openai_api_key:
-            raise ValueError("OPENAI_API_KEY missing in environment config")
-        if not self.huggingface_api_token:
-            raise ValueError("HUGGINGFACEHUB_API_TOKEN missing in environment config")
+        for field in fields(self):
+            if not getattr(self, field.name):
+                raise ValueError(f"{field.name} missing in environment config")
         return True
 
 
-# global config instances
+# global instances
 model_config = ModelConfig()
 pdf_config = PDFConfig()
 ui_config = UIConfig()

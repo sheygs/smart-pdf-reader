@@ -3,9 +3,9 @@ from typing import Any
 
 
 class SessionManager:
+
     @staticmethod
     def initialize():
-        """Initialize all session state variables"""
         defaults = {
             "conversation": None,
             "history": [],
@@ -14,7 +14,6 @@ class SessionManager:
             "expander": None,
             "pdf_file": None,
         }
-
         for key, value in defaults.items():
             if key not in st.session_state:
                 st.session_state[key] = value
@@ -29,7 +28,6 @@ class SessionManager:
 
     @staticmethod
     def append_to_history(question: str, answer: str):
-        """Append Q&A pair to chat history"""
         st.session_state.history.append((question, answer))
 
     @staticmethod
