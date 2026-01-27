@@ -14,7 +14,7 @@ from ui.components import ChatComponents, PDFComponents
 
 
 def initialise_app():
-    """Initialize application configuration and session"""
+    """Initialize app configuration and session"""
     api_config.validate()
     AppLayout.setup_page()
     st.markdown(css, unsafe_allow_html=True)
@@ -47,10 +47,10 @@ def handle_user_query(question: str):
     # response
     response = ConversationService().query(conversation.invoke, question, history)
 
-    # Update history
+    # update history
     SessionManager.append_to_history(question, response["answer"])
 
-    # Update page num
+    # update page num
     if response.get("source_documents"):
         page_num = list(response["source_documents"][0])[1][1]["page"]
         SessionManager.set("page_num", page_num)

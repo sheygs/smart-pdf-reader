@@ -1,5 +1,3 @@
-"""Configuration and settings"""
-
 from dataclasses import dataclass
 from typing import Literal
 import os

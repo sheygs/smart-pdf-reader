@@ -3,7 +3,7 @@ from config import model_config
 
 
 class EmbeddingService:
-    
+
     def __init__(
         self,
         model_name: str = model_config.embedding_model,
@@ -18,5 +18,4 @@ class EmbeddingService:
         )
 
     def get_embeddings(self) -> HuggingFaceEmbeddings:
-        """Return configured embeddings instance"""
         return self.embeddings
