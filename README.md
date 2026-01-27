@@ -81,7 +81,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 5. **Set up environment variables**
 
-   Rename the `.env.dev` file to `.env` in the root directory and populate the required keys:
+   Rename the `.env.example` file to `.env` in the root directory and populate the required keys:
 
    ```env
    OPENAI_API_KEY=your_openai_api_key_here

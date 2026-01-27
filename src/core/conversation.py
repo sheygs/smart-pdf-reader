@@ -13,7 +13,10 @@ class ConversationService:
         self.temperature = temperature
         self.return_sources = return_sources
         self.llm = ChatOpenAI(
-            temperature=self.temperature, api_key=api_config.openai_api_key
+            temperature=self.temperature,
+            api_key=api_config.openai_api_key,
+            max_retries=int(api_config.max_retries),
+            request_timeout=int(api_config.request_timeout),
         )
 
     def create_chain(self, retriever):
@@ -26,7 +29,7 @@ class ConversationService:
 
     @staticmethod
     def query(chain, question: str, history: list) -> dict:
-        response = chain(
+        response = chain.invoke(
             {"question": question, "chat_history": history},
             return_only_outputs=True,
         )

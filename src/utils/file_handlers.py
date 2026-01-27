@@ -3,7 +3,6 @@ import streamlit as st
 
 
 class FileHandler:
-    """file operations handler for PDF processing"""
 
     @staticmethod
     def create_temp_file(
