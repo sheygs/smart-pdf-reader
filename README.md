@@ -33,10 +33,10 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 ## Prerequisites
 
-- Python 3.12 (recommended) or 3.10-3.13
-- OpenAI API key
-- HUGGINGFACE API token
-- Poppler (system dependency for PDF rendering)
+- [Python 3.12+](https://www.python.org/downloads/release/python-3120/) (Recommended). (Compatible with 3.10 – 3.13)
+- [OpenAI API Key](https://platform.openai.com/api-keys)
+- [HuggingFace API Token](https://huggingface.co/settings/tokens)
+- [Poppler](https://poppler.freedesktop.org/) (system dependency for PDF rendering)
 
 ## Installation
 
@@ -110,7 +110,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
    - The answer page will be displayed first with a 📍 indicator
    - Context pages (±2 pages) will be shown below for additional context
 
-## Project Structure
+## Folder Structure
 
 ```text
 smart-pdf-reader/
@@ -210,4 +210,4 @@ Contributions are welcome! The project follows a modular architecture to make it
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT - see the [LICENSE](LICENSE) file for details.
