@@ -41,8 +41,8 @@ class APIConfig:
     def __post_init__(self):
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
         self.huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN", "")
-        self.max_retries = os.getenv("MAX_RETIRES", "")
-        self.request_timeout = os.getenv("REQUEST_TIMEOUT", "")
+        self.max_retries = os.getenv("MAX_RETRIES", "5")
+        self.request_timeout = os.getenv("REQUEST_TIMEOUT", "30")
         self.validate()
 
     def validate(self):

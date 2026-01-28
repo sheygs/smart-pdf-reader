@@ -108,7 +108,7 @@ def main():
         pdf_file = st.file_uploader("Upload a PDF here and click ‘Process’")
         SessionManager.set("pdf_file", pdf_file)
 
-        st.write(SessionManager.get("pdf_file"))
+        # st.write(SessionManager.get("pdf_file"))
 
         if st.button("Process", key="a"):
             with st.spinner("Processing..."):
