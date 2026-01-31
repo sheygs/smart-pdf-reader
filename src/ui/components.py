@@ -1,3 +1,5 @@
+import html
+
 import streamlit as st
 from ui.html_templates import bot_template, user_template
 
@@ -7,7 +9,8 @@ class ChatComponents:
     @staticmethod
     def render_message(message: str, is_user: bool = False):
         template = user_template if is_user else bot_template
-        st.write(template.replace("{{MSG}}", message), unsafe_allow_html=True)
+        safe_message = html.escape(message)  # Sanitize to prevent XSS
+        st.write(template.replace("{{MSG}}", safe_message), unsafe_allow_html=True)
 
     @staticmethod
     def render_chat_history(history: list):
