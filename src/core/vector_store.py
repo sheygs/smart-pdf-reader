@@ -1,8 +1,3 @@
-import os
-
-# Disable ChromaDB telemetry before importing
-os.environ["ANONYMIZED_TELEMETRY"] = "False"
-
 import uuid
 from typing import List
 from langchain_community.vectorstores import Chroma
@@ -27,5 +22,5 @@ class VectorStore:
 
     def as_retriever(self, k: int = 2):
         if not self.store:
-            raise ValueError("VectorStore not initialized")
+            raise ValueError("`VectorStore` not initialized")
         return self.store.as_retriever(search_kwargs={"k": k})
