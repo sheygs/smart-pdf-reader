@@ -9,6 +9,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 
 ## Features
 
+- **Simple UI**: Clean, intuitive interface built with Streamlit
 - **PDF Upload**: Upload any PDF document for interactive analysis
 - **AI-Powered Q&A**: Ask questions about your PDF content and get intelligent answers
 - **Semantic Search**: Uses vector embeddings to find relevant content accurately
@@ -17,9 +18,9 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
 - **Image-Based PDF Rendering**: Reliable cross-platform PDF viewing that works on all deployment environments
 - **Smart Page Context**: Automatically displays surrounding pages (±2 pages) for better understanding
 - **Conversational Interface**: Natural chat experience powered by GPT-3.5/GPT-4
-- **Simple UI**: Clean, intuitive interface built with Streamlit
-- **Modular Architecture**: Well-organized codebase with separation of concerns for easy maintenance and extension
 - **Performance Optimized**: Cached PDF-to-image conversion for faster repeated access
+- **Rate Limiting**: Built-in session-based rate limiting to prevent API abuse
+- **Security**: XSS protection and input sanitization
 
 ## Technologies
 
@@ -86,6 +87,8 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
    HUGGINGFACEHUB_API_TOKEN=your_huggingface_api_token_here
+   MAX_RETRIES=5              # Optional: API retry attempts (default: 5)
+   REQUEST_TIMEOUT=30         # Optional: API timeout in seconds (default: 30)
    ```
 
 ## Usage
@@ -110,7 +113,7 @@ An interactive PDF reader powered by LangChain and GPT that enables users to upl
    - The answer page will be displayed first with a 📍 indicator
    - Context pages (±2 pages) will be shown below for additional context
 
-## Folder Structure
+## Project Module
 
 ```text
 smart-pdf-reader/
@@ -136,7 +139,7 @@ smart-pdf-reader/
 │       └── pdf_renderer.py        # PDF rendering utilities
 │
 ├── requirements.txt              # Python dependencies
-├── .env.dev                      # Environment variables template
+├── .env.example                  # Environment variables template
 ├── README.md                     # Project documentation
 └── .gitignore
 ```
@@ -182,24 +185,27 @@ class PDFConfig:
     context_page_after: int = 2   # Pages to show after answer page
     default_page: int = 0         # Default page to display
     dpi: int = 150                # Image resolution for PDF rendering
+
+@dataclass
+class RateLimitConfig:
+    max_queries_per_session: int = 50   # Max questions per session
+    max_file_size_mb: int = 20          # Max PDF file size in MB
+    max_history_length: int = 20        # Max chat history entries
+    cooldown_seconds: float = 2.0       # Delay between queries
 ```
 
 ## Limitations
 
-- **File Format Support**: Currently only supports PDF files. Support for other document formats (Word, TXT, etc.) is planned for future releases
-- **Internet Connection Required**: Active internet connection needed for API calls to OpenAI and HuggingFace
-- **API Costs**: OpenAI API usage incurs costs based on usage. Monitor your API usage to avoid unexpected charges
-- **PDF Size**: Very large PDFs (100+ pages) may take longer to process and could impact performance
-- **Language Support**: Best performance with English text. Other languages may work but have not been extensively tested
-- **Memory Usage**: Processing large documents requires sufficient system memory. Close other applications if you experience slowdowns
+- Currently only supports PDF files. Support for other document formats (Word, TXT, etc.) is planned for future releases
+- Active internet connection needed for API calls to OpenAI and HuggingFace
+- OpenAI API usage incurs costs based on usage. Monitor your API usage to avoid unexpected charges
+- Default file size limit is 20MB (configurable). Very large PDFs (100+ pages) may take longer to process
+- Best performance with English text. Other languages may work but have not been extensively tested
+- Processing large documents requires sufficient system memory. Close other applications if you experience slowdowns
 
 ## Contributing
 
 Contributions are welcome! The project follows a modular architecture to make it easy to contribute:
-
-1. **Core Features**: Add new functionality in the `src/core/` module
-2. **UI Improvements**: Enhance the interface in the `src/ui/` module
-3. **Utilities**: Add helper functions in the `src/utils/` module
 
 ## Acknowledgments
 
@@ -210,4 +216,4 @@ Contributions are welcome! The project follows a modular architecture to make it
 
 ## License
 
-MIT - see the [LICENSE](LICENSE) file for details.
+MIT - see the [LICENSE](LICENSE) file.

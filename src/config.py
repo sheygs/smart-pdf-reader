@@ -1,6 +1,6 @@
-from dataclasses import dataclass, fields
-from typing import Literal
 import os
+from dataclasses import dataclass
+from typing import Literal
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,21 +35,34 @@ class UIConfig:
 class APIConfig:
     openai_api_key: str = ""
     huggingface_api_token: str = ""
-    max_retries: str = ""
-    request_timeout: str = ""
+    max_retries: int = 5
+    request_timeout: int = 30
 
     def __post_init__(self):
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
         self.huggingface_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN", "")
-        self.max_retries = os.getenv("MAX_RETRIES", "5")
-        self.request_timeout = os.getenv("REQUEST_TIMEOUT", "30")
+        self.max_retries = int(os.getenv("MAX_RETRIES", "5"))
+        self.request_timeout = int(os.getenv("REQUEST_TIMEOUT", "30"))
         self.validate()
 
     def validate(self):
-        for field in fields(self):
-            if not getattr(self, field.name):
-                raise ValueError(f"{field.name} missing in environment config")
+        if not self.openai_api_key:
+            raise ValueError("OPENAI_API_KEY missing in environment config")
+        if not self.huggingface_api_token:
+            raise ValueError("HUGGINGFACEHUB_API_TOKEN missing in environment config")
+        if self.max_retries < 0:
+            raise ValueError("MAX_RETRIES must be non-negative")
+        if self.request_timeout <= 0:
+            raise ValueError("REQUEST_TIMEOUT must be positive")
         return True
+
+
+@dataclass
+class RateLimitConfig:
+    max_queries_per_session: int = 10
+    max_file_size_mb: int = 20
+    max_history_length: int = 20
+    cooldown_seconds: float = 2.0
 
 
 # global instances
@@ -57,3 +70,4 @@ model_config = ModelConfig()
 pdf_config = PDFConfig()
 ui_config = UIConfig()
 api_config = APIConfig()
+rate_limit_config = RateLimitConfig()
