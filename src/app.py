@@ -22,7 +22,7 @@ def initialise_app():
 
 
 def process_uploaded_file(uploaded_file):
-    # Clean up previous temp files before creating new ones
+    # clean up prev. temp files before creating new ones
     FileHandler.cleanup_temp_files()
 
     temp_path = FileHandler.create_temp_file(uploaded_file)
@@ -42,9 +42,9 @@ def process_uploaded_file(uploaded_file):
 
 
 def check_rate_limit() -> bool:
-    """Check if user has exceeded rate limits."""
-    query_count = SessionManager.get("query_count") or 0
-    last_query_time = SessionManager.get("last_query_time") or 0.0
+    """has user has exceeded rate limits?"""
+    query_count = SessionManager.get("query_count", 0)
+    last_query_time = SessionManager.get("last_query_time", 0.0)
 
     # Cooldown check
     if time.time() - last_query_time < rate_limit_config.cooldown_seconds:
@@ -61,22 +61,20 @@ def check_rate_limit() -> bool:
 
 def handle_user_query(question: str):
     # Input validation
-    if not question or not question.strip():
-        return
-
-    if not check_rate_limit():
+    if not question or not question.strip() or not check_rate_limit():
         return
 
     # Update rate limit counters
-    SessionManager.set("query_count", (SessionManager.get("query_count") or 0) + 1)
+    current_count = SessionManager.get("query_count", 0)
+    SessionManager.set("query_count", current_count + 1)
     SessionManager.set("last_query_time", time.time())
 
     conversation = SessionManager.get("conversation")
-    history = SessionManager.get("history") or []
+    history = SessionManager.get("history", [])
 
     # Limit history length to prevent unbounded growth
     if len(history) > rate_limit_config.max_history_length:
-        history = history[-rate_limit_config.max_history_length:]
+        history = history[-rate_limit_config.max_history_length :]
         SessionManager.set("history", history)
 
     conversation_service = ConversationService()
@@ -84,7 +82,7 @@ def handle_user_query(question: str):
 
     SessionManager.append_to_history(question, response["answer"])
 
-    # Safely extract page number from source documents
+    # safely extract page number from source documents
     if response.get("source_documents"):
         try:
             doc = response["source_documents"][0]
@@ -150,13 +148,17 @@ def main():
         ## pdf upload
         AppLayout.render_header("Your Documents")
         pdf_file = st.file_uploader(
-            "Upload a PDF here and click 'Process'",
-            type=["pdf"]
+            "Upload a PDF here and click 'Process'", type=["pdf"]
         )
 
-        # Validate file size
-        if pdf_file and pdf_file.size > rate_limit_config.max_file_size_mb * 1024 * 1024:
-            st.error(f"File too large. Maximum size is {rate_limit_config.max_file_size_mb}MB")
+        # validate file size
+        if (
+            pdf_file
+            and pdf_file.size > rate_limit_config.max_file_size_mb * 1024 * 1024
+        ):
+            st.error(
+                f"File too large. Maximum size is {rate_limit_config.max_file_size_mb}MB"
+            )
             pdf_file = None
 
         SessionManager.set("pdf_file", pdf_file)

@@ -59,7 +59,7 @@ class APIConfig:
 
 @dataclass
 class RateLimitConfig:
-    max_queries_per_session: int = 50
+    max_queries_per_session: int = 10
     max_file_size_mb: int = 20
     max_history_length: int = 20
     cooldown_seconds: float = 2.0

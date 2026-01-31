@@ -1,10 +1,10 @@
 import os
-import uuid
-from typing import List
 
 # Disable ChromaDB telemetry before importing
 os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
+import uuid
+from typing import List
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings

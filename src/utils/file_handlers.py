@@ -39,7 +39,8 @@ class FileHandler:
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
             except OSError:
-                pass  # File may already be deleted
+                # file may already be deleted
+                pass
         cls._temp_files.clear()
 
     @classmethod

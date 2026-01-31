@@ -3,7 +3,6 @@ from typing import List, Tuple, Dict, Any, Callable, Union
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.retrievers import BaseRetriever
 
@@ -11,10 +10,6 @@ from config import model_config, api_config
 
 
 class ConversationService:
-    """
-    Conversational retrieval service using LCEL (LangChain Expression Language).
-    Replaces the deprecated ConversationalRetrievalChain.
-    """
 
     def __init__(
         self,
@@ -30,7 +25,9 @@ class ConversationService:
             timeout=api_config.request_timeout,
         )
 
-    def create_chain(self, retriever: BaseRetriever) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
+    def create_chain(
+        self, retriever: BaseRetriever
+    ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
         """
         Create an LCEL-based conversational retrieval chain.
 
@@ -40,14 +37,18 @@ class ConversationService:
         Returns:
             A callable chain that accepts question and chat_history
         """
-        prompt = ChatPromptTemplate.from_messages([
-            ("system",
-             "You are a helpful assistant. Answer the question based on the following context. "
-             "If you cannot find the answer in the context, say so.\n\n"
-             "Context:\n{context}"),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{question}"),
-        ])
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    "You are a helpful assistant. Answer the question based on the following context. "
+                    "If you cannot find the answer in the context, say so.\n\n"
+                    "Context:\n{context}",
+                ),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{question}"),
+            ]
+        )
 
         def format_docs(docs: List) -> str:
             """Format retrieved documents into a single string."""
@@ -71,12 +72,13 @@ class ConversationService:
         if self.return_sources:
             return self._wrap_with_sources(retriever, answer_chain)
 
-        return lambda inputs: {"answer": answer_chain.invoke(inputs), "source_documents": []}
+        return lambda inputs: {
+            "answer": answer_chain.invoke(inputs),
+            "source_documents": [],
+        }
 
     def _wrap_with_sources(
-        self,
-        retriever: BaseRetriever,
-        answer_chain
+        self, retriever: BaseRetriever, answer_chain
     ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
         """
         Wrap the answer chain to also return source documents.
@@ -88,6 +90,7 @@ class ConversationService:
         Returns:
             A callable that returns both answer and source documents
         """
+
         def get_answer_with_sources(inputs: Dict[str, Any]) -> Dict[str, Any]:
             # Get source documents
             docs = retriever.invoke(inputs["question"])
@@ -98,7 +101,9 @@ class ConversationService:
         return get_answer_with_sources
 
     @staticmethod
-    def format_history(history: List[Tuple[str, str]]) -> List[Union[HumanMessage, AIMessage]]:
+    def format_history(
+        history: List[Tuple[str, str]],
+    ) -> List[Union[HumanMessage, AIMessage]]:
         """
         Convert history tuples to LangChain message format.
 
@@ -118,7 +123,7 @@ class ConversationService:
         self,
         chain: Callable[[Dict[str, Any]], Dict[str, Any]],
         question: str,
-        history: List[Tuple[str, str]]
+        history: List[Tuple[str, str]],
     ) -> Dict[str, Any]:
         """
         Query the conversation chain.
@@ -132,7 +137,4 @@ class ConversationService:
             Dict with 'answer' and 'source_documents' keys
         """
         formatted_history = self.format_history(history)
-        return chain({
-            "question": question,
-            "chat_history": formatted_history
-        })
+        return chain({"question": question, "chat_history": formatted_history})

@@ -9,7 +9,8 @@ class ChatComponents:
     @staticmethod
     def render_message(message: str, is_user: bool = False):
         template = user_template if is_user else bot_template
-        safe_message = html.escape(message)  # Sanitize to prevent XSS
+        # sanitize to prevent XSS
+        safe_message = html.escape(message)
         st.write(template.replace("{{MSG}}", safe_message), unsafe_allow_html=True)
 
     @staticmethod
